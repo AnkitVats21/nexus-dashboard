@@ -1,4 +1,4 @@
-# waveshare-dashboard
+# nexus-dashboard
 
 The web dashboard for the [Nexus firmware](https://github.com/AnkitVats21/waveshare)
 on the Waveshare ESP32-S3 audio board. React 19 + Vite, no UI framework.
