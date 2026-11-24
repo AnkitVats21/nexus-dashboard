@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Dashboard — Reimagined Designs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────────────────────────────────
+       DESIGN SYSTEM CORE & THEME TOKENS
+       ─────────────────────────────────────────────────────────────────────── */
+    :root {
+      /* Shared font families */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-display: 'Plus Jakarta Sans', var(--font-sans);
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      /* Global transition */
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* DARK THEME (Default) */
+    html[data-theme="dark"] {
+      --bg-base: #090a0d;
+      --bg-surface: #111318;
+      --bg-surface-elevated: #181b22;
+      --bg-subtle: #1f232c;
+      --bg-active: #282d38;
+      
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-medium: rgba(255, 255, 255, 0.12);
+      --border-strong: rgba(255, 255, 255, 0.2);
+      
+      --text-primary: #f0f2f5;
+      --text-secondary: #9da4b2;
+      --text-tertiary: #606877;
+      --text-muted: #434a58;
+      
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --accent-subtle: rgba(59, 130, 246, 0.12);
+      --accent-border: rgba(59, 130, 246, 0.25);
+      
+      --success: #10b981;
+      --success-subtle: rgba(16, 185, 129, 0.12);
+      --warning: #f59e0b;
+      --warning-subtle: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-subtle: rgba(239, 68, 68, 0.12);
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+      
+      --glass: rgba(17, 19, 24, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
+    }
+
+    /* LIGHT THEME */
+    html[data-theme="light"] {
+      --bg-base: #f8f9fa;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f1f3f6;
+      --bg-subtle: #e9ecef;
+      --bg-active: #dee2e6;
+      
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-medium: rgba(0, 0, 0, 0.11);
+      --border-strong: rgba(0, 0, 0, 0.22);
+      
+      --text-primary: #0f141c;
+      --text-secondary: #4b5563;
+      --text-tertiary: #6b7280;
+      --text-muted: #9ca3af;
+      
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-subtle: rgba(37, 99, 235, 0.08);
+      --accent-border: rgba(37, 99, 235, 0.2);
+      
+      --success: #059669;
+      --success-subtle: rgba(5, 150, 105, 0.08);
+      --warning: #d97706;
+      --warning-subtle: rgba(217, 119, 6, 0.08);
+      --danger: #dc2626;
+      --danger-subtle: rgba(220, 38, 38, 0.08);
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+      
+      --glass: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(0, 0, 0, 0.08);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    button, input, select {
+      font: inherit;
+      color: inherit;
+      outline: none;
+      border: none;
+      background: none;
+    }
+    button { cursor: pointer; }
+
+    /* Top Switcher Bar (Lab Controller) */
+    .lab-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 24px;
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-medium);
+    }
+
+    .lab-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .lab-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border: 1px solid var(--accent-border);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .lab-title {
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    .lab-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-surface);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+    }
+    .lab-tab {
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 500;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      transition: all 0.15s var(--ease);
+    }
+    .lab-tab:hover {
+      color: var(--text-primary);
+    }
+    .lab-tab.is-active {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .lab-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      color: var(--text-secondary);
+      transition: all 0.15s var(--ease);
+    }
+    .btn-toggle:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+
+    /* Container for Concept Views */
+    .concept-viewport {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .concept-view {
+      display: none;
+      animation: fadeIn 0.25s var(--ease);
+    }
+    .concept-view.is-visible {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Concept Description Banner */
+    .concept-rationale {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      background: var(--bg-surface);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+    .concept-info h2 {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .concept-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .concept-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════════
+       COMMON UI PRIMITIVES (Non-slop, clean, high-precision)
+       ═══════════════════════════════════════════════════════════════════════ */
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 3px var(--success-subtle);
+      display: inline-block;
+    }
+    .status-dot.warn { background: var(--warning); box-shadow: 0 0 0 3px var(--warning-subtle); }
+    .status-dot.danger { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-subtle); }
+
+    /* Clean Range Slider */
+    .clean-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 99px;
+      background: var(--bg-subtle);
+      outline: none;
+      cursor: pointer;
+      position: relative;
+    }
+    .clean-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: transform 0.1s var(--ease);
+    }
+    .clean-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Clean Icon Button */
+    .c-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      transition: all 0.15s var(--ease);
+    }
+    .c-btn:hover {
+      background: var(--bg-subtle);
+      border-color: var(--border-strong);
+    }
+    .c-btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .c-btn-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+    .c-btn-icon {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════════
+       CONCEPT 1: "LINEAR PRECISION" (Modern Pro / High-Density & Clarity)
+       ═══════════════════════════════════════════════════════════════════════ */
+    .c1-shell {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      background: var(--bg-surface);
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      min-height: 720px;
+    }
+
+    .c1-sidebar {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .c1-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px;
+    }
+    .c1-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--text-primary);
+      color: var(--bg-surface);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .c1-brand-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .c1-brand-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .c1-brand-ip {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    .c1-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .c1-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.12s var(--ease);
+    }
+    .c1-nav-item:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+    .c1-nav-item.is-active {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .c1-nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+    .c1-nav-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--bg-active);
+      color: var(--text-secondary);
+    }
+
+    .c1-sidebar-foot {
+      margin-top: auto;
+      padding: 12px 10px;
+      background: var(--bg-surface-elevated);
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .c1-device-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+    }
+
+    .c1-main {
+      background: var(--bg-base);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* Top bar inside shell */
+    .c1-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+    }
+    .c1-breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .c1-topbar-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .c1-content {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Hero Sound Module */
+    .c1-hero-player {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 24px;
+      align-items: center;
+      padding: 20px 24px;
+      background: var(--bg-surface);
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+    .c1-art {
+      width: 96px;
+      height: 96px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+    .c1-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .c1-track-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    .c1-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+    .c1-track-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .c1-track-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .c1-scrubber-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .c1-time {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      min-width: 36px;
+    }
+
+    .c1-hero-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+    }
+    .c1-playback-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .c1-play-big {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      color: var(--bg-surface);
+      display: grid;
+      place-items: center;
+      transition: transform 0.12s var(--ease);
+    }
+    .c1-play-big:hover {
+      transform: scale(1.05);
+    }
+    .c1-volume-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-subtle);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      width: 170px;
+    }
+
+    /* Grid layout for widgets */
+    .c1-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .c1-card {
+      background: var(--bg-surface);
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .c1-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .c1-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .c1-card-title svg {
+      color: var(--text-tertiary);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Assistant status bar */
+    .c1-assistant-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+    }
+    .c1-assistant-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .c1-assistant-status {
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .c1-assistant-hint {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+    }
+    .c1-chat-sample {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .c1-bubble {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      max-width: 85%;
+      line-height: 1.4;
+    }
+    .c1-bubble-user {
+      align-self: flex-end;
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+    .c1-bubble-ai {
+      align-self: flex-start;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    /* Sliders bank */
+    .c1-control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .c1-control-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Telemetry strip */
+    .c1-telemetry {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .c1-stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .c1-stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .c1-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      font-family: var(--font-mono);
+    }
+    .c1-stat-bar {
+      height: 3px;
+      background: var(--bg-subtle);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .c1-stat-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════════
+       CONCEPT 2: "CONTROL BENTO" (Apple Home / Tactile Control Center)
+       ═══════════════════════════════════════════════════════════════════════ */
+    .c2-shell {
+      background: var(--bg-surface);
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .c2-nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .c2-room-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .c2-room-subtitle {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .c2-pills {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-surface-elevated);
+      padding: 4px;
+      border-radius: 99px;
+      border: 1px solid var(--border-subtle);
+    }
+    .c2-pill-btn {
+      padding: 6px 16px;
+      border-radius: 99px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.15s var(--ease);
+    }
+    .c2-pill-btn.is-active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Bento Grid */
+    .c2-bento {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 16px;
+    }
+
+    .c2-bento-hero {
+      grid-column: 1 / 3;
+      background: var(--bg-surface-elevated);
+      border-radius: 16px;
+      border: 1px solid var(--border-medium);
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .c2-bento-hero::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: -50px;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .c2-hero-art {
+      width: 140px;
+      height: 140px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .c2-hero-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .c2-hero-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-grow: 1;
+      min-width: 0;
+    }
+    .c2-hero-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .c2-hero-artist {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .c2-bento-card {
+      background: var(--bg-surface-elevated);
+      border-radius: 16px;
+      border: 1px solid var(--border-medium);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.15s var(--ease);
+    }
+    .c2-bento-card:hover {
+      border-color: var(--border-strong);
+    }
+    .c2-bento-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .c2-bento-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tactile Volume Capsule */
+    .c2-vol-capsule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-subtle);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-top: 12px;
+    }
+    .c2-vol-text {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 44px;
+      text-align: right;
+    }
+
+    /* LED Ring Simulator (Authentic circular preview) */
+    .c2-led-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 0;
+    }
+    .c2-ring {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 6px solid #22c55e;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4), inset 0 0 14px rgba(34, 197, 94, 0.3);
+      transition: all 0.3s var(--ease);
+    }
+    .c2-swatches {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .c2-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.12s var(--ease);
+    }
+    .c2-swatch:hover {
+      transform: scale(1.15);
+    }
+    .c2-swatch.is-active {
+      border-color: var(--text-primary);
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════════
+       CONCEPT 3: "SWISS CLEAN STUDIO" (Vercel / Dieter Rams Modern Editorial)
+       ═══════════════════════════════════════════════════════════════════════ */
+    .c3-shell {
+      background: var(--bg-surface);
+      border-radius: 14px;
+      border: 1px solid var(--border-medium);
+      box-shadow: var(--shadow-lg);
+      padding: 32px 36px;
+      display: grid;
+      grid-template-columns: 380px 1px 1fr;
+      gap: 36px;
+      min-height: 700px;
+    }
+    .c3-divider {
+      background: var(--border-subtle);
+      width: 1px;
+      height: 100%;
+    }
+
+    .c3-sound-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .c3-header-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .c3-big-art {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+    .c3-big-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .c3-song-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .c3-song-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .c3-controls-column {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .c3-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .c3-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .c3-kv-table {
+      display: flex;
+      flex-direction: column;
+    }
+    .c3-kv-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .c3-kv-key {
+      color: var(--text-secondary);
+    }
+    .c3-kv-val {
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 1080px) {
+      .c1-shell { grid-template-columns: 1fr; }
+      .c1-sidebar { display: none; }
+      .c2-bento { grid-template-columns: 1fr; }
+      .c2-bento-hero { grid-column: 1 / -1; }
+      .c3-shell { grid-template-columns: 1fr; }
+      .c3-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Top Switcher Toolbar ─────────────────────────────────────────────── -->
+  <header class="lab-bar">
+    <div class="lab-brand">
+      <span class="lab-badge">Design Lab</span>
+      <span class="lab-title">Nexus ESP32-S3 Dashboard — Usability Reimagined</span>
+    </div>
+
+    <div class="lab-tabs" role="tablist">
+      <button class="lab-tab is-active" onclick="switchConcept(1)">1. Linear Precision</button>
+      <button class="lab-tab" onclick="switchConcept(2)">2. Apple Control Bento</button>
+      <button class="lab-tab" onclick="switchConcept(3)">3. Swiss Clean Studio</button>
+    </div>
+
+    <div class="lab-actions">
+      <button class="btn-toggle" onclick="toggleTheme()" id="themeBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span id="themeLabel">Light</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="concept-viewport">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONCEPT 1: LINEAR PRECISION
+         ═════════════════════════════════════════════════════════════════════ -->
+    <section class="concept-view is-visible" id="concept-1">
+      <div class="concept-rationale">
+        <div class="concept-info">
+          <h2>Concept 1: Modern Precision (Linear / Raycast Style)</h2>
+          <p>Prioritizes fast access, razor-sharp visual hierarchy, dense telemetry without clutter, and zero decorative fluff.</p>
+        </div>
+        <div class="concept-tags">
+          <span class="tag">High Density</span>
+          <span class="tag">Tactile Sliders</span>
+          <span class="tag">Tabular Telemetry</span>
+          <span class="tag">Pro Workflow</span>
+        </div>
+      </div>
+
+      <div class="c1-shell">
+        <!-- Sidebar Navigation -->
+        <aside class="c1-sidebar">
+          <div class="c1-brand">
+            <div class="c1-logo">N</div>
+            <div class="c1-brand-info">
+              <span class="c1-brand-title">Nexus Audio</span>
+              <span class="c1-brand-ip">192.168.1.14</span>
+            </div>
+          </div>
+
+          <nav class="c1-nav">
+            <a href="#" class="c1-nav-item is-active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>Overview</span>
+            </a>
+            <a href="#" class="c1-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span>Music & Queue</span>
+              <span class="c1-nav-badge">4</span>
+            </a>
+            <a href="#" class="c1-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+              <span>Voice Assistant</span>
+            </a>
+            <a href="#" class="c1-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Schedules & Clock</span>
+            </a>
+            <a href="#" class="c1-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="3" y2="3"/><line x1="12" x2="12" y1="3" y2="21"/></svg>
+              <span>Acoustic Stage</span>
+            </a>
+            <a href="#" class="c1-nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10M7 12h10M7 17h10"/></svg>
+              <span>System & Logs</span>
+            </a>
+          </nav>
+
+          <div class="c1-sidebar-foot">
+            <div class="c1-device-row">
+              <span style="display:flex; align-items:center; gap:6px;">
+                <span class="status-dot"></span>
+                <strong>ESP32-S3 Online</strong>
+              </span>
+              <span class="mono" style="color:var(--text-tertiary);">48 KB/s</span>
+            </div>
+            <div class="c1-device-row" style="color:var(--text-secondary);">
+              <span>Wi-Fi Signal</span>
+              <span class="mono">-54 dBm (Great)</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Body -->
+        <main class="c1-main">
+          <header class="c1-topbar">
+            <div class="c1-breadcrumbs">
+              <span style="color:var(--text-tertiary);">Device</span>
+              <span>/</span>
+              <span>Living Room Speaker</span>
+            </div>
+            <div class="c1-topbar-tools">
+              <button class="c-btn" id="micToggleBtn" onclick="toggleMic()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                <span id="micToggleLabel">Mic: Listening</span>
+              </button>
+              <button class="c-btn c-btn-primary" onclick="alert('Sent ping to device buzzer!')">Ping Device</button>
+            </div>
+          </header>
+
+          <div class="c1-content">
+            <!-- Hero Sound Unit -->
+            <div class="c1-hero-player">
+              <div class="c1-art">
+                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80" alt="Album Art">
+              </div>
+
+              <div class="c1-track-info">
+                <div class="c1-eyebrow">
+                  <span class="status-dot"></span>
+                  <span>Now Streaming · YouTube 320kbps (Cached)</span>
+                </div>
+                <h1 class="c1-track-title">Midnight City</h1>
+                <p class="c1-track-meta">M83 — Hurry Up, We're Dreaming · Synthpop</p>
+
+                <div class="c1-scrubber-row">
+                  <span class="c1-time" id="c1-curTime">02:44</span>
+                  <input type="range" class="clean-slider" id="c1-scrubber" min="0" max="243" value="164" oninput="updateScrubber(this.value)">
+                  <span class="c1-time">04:03</span>
+                </div>
+              </div>
+
+              <div class="c1-hero-controls">
+                <div class="c1-playback-buttons">
+                  <button class="c-btn c-btn-icon" title="Previous Track">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>
+                  </button>
+                  <button class="c1-play-big" id="playBtn" onclick="togglePlay()" title="Play/Pause">
+                    <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                  </button>
+                  <button class="c-btn c-btn-icon" title="Next Track">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>
+                  </button>
+                </div>
+
+                <div class="c1-volume-pill">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  <input type="range" class="clean-slider" id="c1-vol" min="0" max="100" value="68" oninput="updateVol(this.value)">
+                  <span class="mono" id="c1-vol-label" style="font-size:11.5px; min-width:30px;">68%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Two-Column Operational Deck -->
+            <div class="c1-grid">
+              <!-- Assistant Card -->
+              <div class="c1-card">
+                <div class="c1-card-head">
+                  <span class="c1-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    Voice Assistant & VAD
+                  </span>
+                  <span class="tag">Gemini 2.5 Flash</span>
+                </div>
+
+                <div class="c1-assistant-strip">
+                  <div class="c1-assistant-text">
+                    <span class="c1-assistant-status">
+                      <span class="status-dot"></span>
+                      Standby for "Hey Nexus"
+                    </span>
+                    <span class="c1-assistant-hint">Dual I2S Beamforming Active · 16kHz</span>
+                  </div>
+                  <button class="c-btn" style="height:28px; font-size:11.5px;">Trigger Wake</button>
+                </div>
+
+                <div class="c1-chat-sample">
+                  <div class="c1-bubble c1-bubble-user">
+                    "Play some late night synthwave and dim the speaker ring."
+                  </div>
+                  <div class="c1-bubble c1-bubble-ai">
+                    "Playing Midnight City by M83. Dimmed the LED ring to 20% amber breathing mode."
+                  </div>
+                </div>
+              </div>
+
+              <!-- Acoustic Calibration & Hardware -->
+              <div class="c1-card">
+                <div class="c1-card-head">
+                  <span class="c1-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="3" y2="3"/><line x1="12" x2="12" y1="3" y2="21"/></svg>
+                    Hardware & Acoustics
+                  </span>
+                  <button class="c-btn" style="height:26px; font-size:11.5px;" onclick="resetEq()">Reset Flat</button>
+                </div>
+
+                <div class="c1-control-row">
+                  <div class="c1-control-header">
+                    <span>Bass Boost</span>
+                    <span class="mono" id="c1-bass-val">+2.0 dB</span>
+                  </div>
+                  <input type="range" class="clean-slider" min="-12" max="6" value="2" step="0.5" oninput="document.getElementById('c1-bass-val').innerText = (this.value >= 0 ? '+' : '') + this.value + ' dB'">
+                </div>
+
+                <div class="c1-control-row">
+                  <div class="c1-control-header">
+                    <span>Treble Clarification</span>
+                    <span class="mono" id="c1-treble-val">-1.0 dB</span>
+                  </div>
+                  <input type="range" class="clean-slider" min="-12" max="6" value="-1" step="0.5" oninput="document.getElementById('c1-treble-val').innerText = (this.value >= 0 ? '+' : '') + this.value + ' dB'">
+                </div>
+
+                <div class="c1-control-row">
+                  <div class="c1-control-header">
+                    <span>WS2812 Halo Ring Mode</span>
+                    <span class="mono" style="color:var(--accent);">Breathing Amber (18%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Discrete Micro Telemetry Strip -->
+            <div class="c1-telemetry">
+              <div class="c1-stat-card">
+                <span class="c1-stat-label">Core 0 / Core 1</span>
+                <span class="c1-stat-value">14% / 9%</span>
+                <div class="c1-stat-bar"><div class="c1-stat-fill" style="width: 14%;"></div></div>
+              </div>
+              <div class="c1-stat-card">
+                <span class="c1-stat-label">Internal SRAM</span>
+                <span class="c1-stat-value">168 KB Free</span>
+                <div class="c1-stat-bar"><div class="c1-stat-fill" style="width: 62%;"></div></div>
+              </div>
+              <div class="c1-stat-card">
+                <span class="c1-stat-label">External PSRAM</span>
+                <span class="c1-stat-value">7.84 MB Free</span>
+                <div class="c1-stat-bar"><div class="c1-stat-fill" style="width: 94%;"></div></div>
+              </div>
+              <div class="c1-stat-card">
+                <span class="c1-stat-label">SD Card Storage</span>
+                <span class="c1-stat-value">28.4 GB Free</span>
+                <div class="c1-stat-bar"><div class="c1-stat-fill" style="width: 88%;"></div></div>
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONCEPT 2: APPLE CONTROL BENTO
+         ═════════════════════════════════════════════════════════════════════ -->
+    <section class="concept-view" id="concept-2">
+      <div class="concept-rationale">
+        <div class="concept-info">
+          <h2>Concept 2: Modern Control Bento (Apple Home / Control Center Style)</h2>
+          <p>Tactile modular capsules. Feels like physical hardware widgets on your desktop or iPad, designed for quick touch and glanceability.</p>
+        </div>
+        <div class="concept-tags">
+          <span class="tag">Bento Grid</span>
+          <span class="tag">Touch Friendly</span>
+          <span class="tag">Tactile Halo</span>
+          <span class="tag">Glanceable</span>
+        </div>
+      </div>
+
+      <div class="c2-shell">
+        <div class="c2-nav-header">
+          <div>
+            <h1 class="c2-room-title">Living Room Sound System</h1>
+            <p class="c2-room-subtitle">Waveshare ESP32-S3 · Connected over Wi-Fi (5GHz)</p>
+          </div>
+
+          <div class="c2-pills">
+            <button class="c2-pill-btn is-active">Sound Hub</button>
+            <button class="c2-pill-btn">Assistant</button>
+            <button class="c2-pill-btn">Alarms</button>
+            <button class="c2-pill-btn">Diagnostics</button>
+          </div>
+        </div>
+
+        <div class="c2-bento">
+          <!-- Hero Bento Tile -->
+          <div class="c2-bento-hero">
+            <div class="c2-hero-art">
+              <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80" alt="Album Art">
+            </div>
+            <div class="c2-hero-body">
+              <div>
+                <span style="font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.06em;">AirPlay / YouTube Stream</span>
+                <h2 class="c2-hero-title">Solaris (Ambient Drift)</h2>
+                <p class="c2-hero-artist">Hammock · Silencia (2024 Remaster)</p>
+              </div>
+
+              <div>
+                <input type="range" class="clean-slider" value="45" style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-tertiary); font-family:var(--font-mono);">
+                  <span>01:14</span>
+                  <span>04:30</span>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:12px;">
+                <button class="c-btn c-btn-primary" style="height:38px; padding:0 20px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Playing</span>
+                </button>
+                <button class="c-btn" style="height:38px;">Next Track</button>
+                <span style="margin-left:auto; font-size:12px; color:var(--text-secondary);">Output: <strong>Internal ES8311</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Volume Capsule Card -->
+          <div class="c2-bento-card">
+            <div class="c2-bento-header">
+              <span class="c2-bento-label">Acoustic Output</span>
+              <span class="status-dot"></span>
+            </div>
+            <div>
+              <span style="font-size:28px; font-weight:800; font-family:var(--font-mono);" id="c2-vol-display">72%</span>
+              <p style="font-size:12px; color:var(--text-secondary);">Master Amplifier Level</p>
+            </div>
+            <div class="c2-vol-capsule">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <input type="range" class="clean-slider" min="0" max="100" value="72" oninput="document.getElementById('c2-vol-display').innerText = this.value + '%'">
+            </div>
+          </div>
+
+          <!-- WS2812 Light Halo Capsule -->
+          <div class="c2-bento-card">
+            <div class="c2-bento-header">
+              <span class="c2-bento-label">RGB Halo Ring</span>
+              <span style="font-size:11px; font-weight:600; color:var(--success);">Solid #22C55E</span>
+            </div>
+            <div class="c2-led-stage">
+              <div class="c2-ring" id="c2-led-ring"></div>
+            </div>
+            <div class="c2-swatches">
+              <div class="c2-swatch is-active" style="background:#22c55e;" onclick="setHaloColor('#22c55e')"></div>
+              <div class="c2-swatch" style="background:#3b82f6;" onclick="setHaloColor('#3b82f6')"></div>
+              <div class="c2-swatch" style="background:#f59e0b;" onclick="setHaloColor('#f59e0b')"></div>
+              <div class="c2-swatch" style="background:#ec4899;" onclick="setHaloColor('#ec4899')"></div>
+              <div class="c2-swatch" style="background:#ffffff;" onclick="setHaloColor('#ffffff')"></div>
+            </div>
+          </div>
+
+          <!-- Next Schedule / Alarm Capsule -->
+          <div class="c2-bento-card">
+            <div class="c2-bento-header">
+              <span class="c2-bento-label">Next Alarm</span>
+              <span class="tag">Tomorrow</span>
+            </div>
+            <div>
+              <span style="font-size:32px; font-weight:800; font-family:var(--font-mono); letter-spacing:-0.03em;">07:00 AM</span>
+              <p style="font-size:12.5px; color:var(--text-secondary); margin-top:2px;">Briefing + Ambient Wake Sound</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; color:var(--text-tertiary);">Rings in 7h 24m</span>
+              <button class="c-btn" style="height:28px; font-size:11.5px;">Edit Alarm</button>
+            </div>
+          </div>
+
+          <!-- Voice Capsule -->
+          <div class="c2-bento-card">
+            <div class="c2-bento-header">
+              <span class="c2-bento-label">Voice Presence</span>
+              <span class="tag">Dual Mic Active</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-dot"></span>
+                <span style="font-weight:600; font-size:13px;">Wake Word: Ready</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                Say "Hey Nexus" or hold the physical button on the board to dictate.
+              </p>
+            </div>
+            <button class="c-btn" style="width:100%; justify-content:center;">Mute Microphones</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONCEPT 3: SWISS CLEAN STUDIO
+         ═════════════════════════════════════════════════════════════════════ -->
+    <section class="concept-view" id="concept-3">
+      <div class="concept-rationale">
+        <div class="concept-info">
+          <h2>Concept 3: Swiss Clean Studio (Vercel / Dieter Rams Modern Editorial)</h2>
+          <p>Extreme visual restraint. Clean dividers instead of heavy card borders. Massive typographic clarity, tabular data precision, and zero visual clutter.</p>
+        </div>
+        <div class="concept-tags">
+          <span class="tag">Editorial Restraint</span>
+          <span class="tag">Zero Visual Fluff</span>
+          <span class="tag">Split Stage</span>
+          <span class="tag">High Legibility</span>
+        </div>
+      </div>
+
+      <div class="c3-shell">
+        <!-- Left Stage: The Sound Artwork & Voice -->
+        <div class="c3-sound-column">
+          <span class="c3-header-eyebrow">Acoustic Station // S3-01</span>
+          
+          <div class="c3-big-art">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80" alt="Cover Art">
+          </div>
+
+          <div class="c3-song-header">
+            <h1>Daydream in Blue</h1>
+            <p>I Monster · Neveroddoreven</p>
+          </div>
+
+          <div>
+            <input type="range" class="clean-slider" value="62" style="margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-mono); color:var(--text-tertiary);">
+              <span>02:18</span>
+              <span>03:42</span>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px;">
+            <button class="c-btn c-btn-primary" style="flex:1; height:40px;">Pause Stream</button>
+            <button class="c-btn" style="height:40px; padding:0 18px;">Skip</button>
+          </div>
+        </div>
+
+        <!-- Vertical Thin Divider -->
+        <div class="c3-divider"></div>
+
+        <!-- Right Stage: Functional Deck -->
+        <div class="c3-controls-column">
+          <div class="c3-section">
+            <span class="c3-section-title">Hardware Acoustics & Transducers</span>
+            <div class="c3-kv-table">
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Master Sound Pressure</span>
+                <span class="c3-kv-val">65% (-12.2 dBFS)</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Dual Microphone Sensitivity</span>
+                <span class="c3-kv-val">+18.0 dB Gain</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">DSP Tone Curves</span>
+                <span class="c3-kv-val">Bass +2.0dB · Treble Flat</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">DAC Output Route</span>
+                <span class="c3-kv-val">ES8311 I2S Class-D Amp</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="c3-section">
+            <span class="c3-section-title">Voice Synapse Agent</span>
+            <div class="c3-kv-table">
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Real-Time LLM Model</span>
+                <span class="c3-kv-val">Gemini 2.5 Flash Live</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Vocal Activity Detection</span>
+                <span class="c3-kv-val">Active (Threshold 0.85)</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Current Voice Persona</span>
+                <span class="c3-kv-val">Nexus Default (Aoede)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="c3-section">
+            <span class="c3-section-title">FreeRTOS Device Telemetry</span>
+            <div class="c3-kv-table">
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Dual-Core Load</span>
+                <span class="c3-kv-val">Core 0: 12% · Core 1: 7%</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">Internal Heap / Minimum</span>
+                <span class="c3-kv-val">174,210 B / 98,400 B</span>
+              </div>
+              <div class="c3-kv-row">
+                <span class="c3-kv-key">System Uptime</span>
+                <span class="c3-kv-val">4 days, 18 hours</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Tab switching between concepts
+    function switchConcept(index) {
+      document.querySelectorAll('.concept-view').forEach(el => el.classList.remove('is-visible'));
+      document.querySelectorAll('.lab-tab').forEach(el => el.classList.remove('is-active'));
+      
+      const target = document.getElementById(`concept-${index}`);
+      if (target) target.classList.add('is-visible');
+      
+      const tabs = document.querySelectorAll('.lab-tab');
+      if (tabs[index - 1]) tabs[index - 1].classList.add('is-active');
+    }
+
+    // Theme toggler
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('themeLabel').innerText = next === 'dark' ? 'Light' : 'Dark';
+    }
+
+    // Playback state toggle demo
+    let isPlaying = true;
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const icon = document.getElementById('playIcon');
+      if (isPlaying) {
+        icon.innerHTML = '<polygon points="6 4 20 12 6 20 6 4"/>';
+      } else {
+        icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+      }
+    }
+
+    // Mic toggle demo
+    let micListening = true;
+    function toggleMic() {
+      micListening = !micListening;
+      const btn = document.getElementById('micToggleBtn');
+      const label = document.getElementById('micToggleLabel');
+      if (micListening) {
+        label.innerText = 'Mic: Listening';
+        btn.style.borderColor = 'var(--border-medium)';
+      } else {
+        label.innerText = 'Mic: Muted';
+        btn.style.borderColor = 'var(--danger)';
+      }
+    }
+
+    // Volume demo
+    function updateVol(val) {
+      document.getElementById('c1-vol-label').innerText = val + '%';
+    }
+
+    function updateScrubber(val) {
+      const min = Math.floor(val / 60);
+      const sec = String(val % 60).padStart(2, '0');
+      document.getElementById('c1-curTime').innerText = `0${min}:${sec}`;
+    }
+
+    function resetEq() {
+      document.getElementById('c1-bass-val').innerText = '0.0 dB';
+      document.getElementById('c1-treble-val').innerText = '0.0 dB';
+    }
+
+    function setHaloColor(color) {
+      const ring = document.getElementById('c2-led-ring');
+      ring.style.borderColor = color;
+      ring.style.boxShadow = `0 0 20px ${color}66, inset 0 0 14px ${color}44`;
+      
+      document.querySelectorAll('.c2-swatch').forEach(s => s.classList.remove('is-active'));
+      event.target.classList.add('is-active');
+    }
+  </script>
+</body>
+</html>
