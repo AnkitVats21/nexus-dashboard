@@ -290,6 +290,9 @@ export const saveHub = (changes) => request('/api/hub', { method: 'POST', json: 
 // dashboard comes from the board.
 export const getHubStatus = () => request('/hub/status');
 export const getBluetooth = () => request('/hub/bluetooth');
+// The songs the hub keeps for its speakers: {enabled, max_bytes, used_bytes,
+// max_duration_s, songs: {id: bytes}}.
+export const getHubCache = () => request('/hub/cache');
 export const bluetoothAction = (action, body) => request(`/hub/bluetooth/${action}`, { method: 'POST', json: body });
 // Start: a conversation as if the wake word was heard, with the longer
 // silence timeout (manual_silence_s). Stop: ends it in any state.

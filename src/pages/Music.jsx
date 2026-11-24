@@ -7,7 +7,7 @@ import { Button, Card, Empty, IconButton, PageHeader, Segmented, Switch } from '
 import { TrackArt, useTrackInfo } from '../components/Track';
 import { useToast } from '../components/Toast';
 import { useNexus } from '../DeviceContext';
-import { clearUnsavedHistory, deleteFromLibrary, getLibrary, getMix, playLocal, scanLibrary, searchYouTube } from '../lib/api';
+import { clearUnsavedHistory, deleteFromLibrary, getHubCache, getLibrary, getMix, playLocal, scanLibrary, searchYouTube } from '../lib/api';
 import { needsResolution, resolveTrackInfo } from '../lib/trackMetadata';
 import { formatBytes, formatSeconds } from '../lib/format';
 
@@ -274,9 +274,10 @@ function SearchView() {
 
 // ── SD library ────────────────────────────────────────────────────────────
 
-// A song whose file isn't on the card stays listed (with its play count) as
-// "Not saved"; it plays by streaming.
-function LibraryRow({ track, onPlay, onDelete, disabled, starting }) {
+// A song whose file isn't in the cache shown (the board's SD card, or the
+// hub's for a hub speaker) stays listed (with its play count) as "Not saved";
+// it plays by streaming.
+function LibraryRow({ track, where, onPlay, onDelete, canDelete, disabled, starting }) {
   const info = useTrackInfo({ id: track.id, title: track.title, artist: track.artist });
   return (
     <div className={clsx('row', !track.cached && 'is-dim')}>
@@ -288,28 +289,31 @@ function LibraryRow({ track, onPlay, onDelete, disabled, starting }) {
       {track.cached ? (
         <span className="mono muted small hide-mobile">{formatBytes(track.size)}</span>
       ) : (
-        <span className="pill pill-neutral" title="The file isn't on the SD card; plays by streaming">Not saved</span>
+        <span className="pill pill-neutral" title={`The file isn't on the ${where}; plays by streaming`}>Not saved</span>
       )}
       <span className="mono muted small">{formatSeconds(track.duration)}</span>
       <IconButton
         icon={starting ? Loader2 : Play}
-        label={track.cached ? 'Play from SD card' : 'Stream'}
+        label={track.cached ? `Play from the ${where}` : 'Stream'}
         disabled={disabled || starting}
         onClick={() => onPlay(track)}
       />
       <IconButton
         icon={Trash2}
-        label="Delete the file from the SD card"
+        label={canDelete ? 'Delete the file from the SD card' : 'The hub frees its space by itself'}
         danger
-        disabled={!track.cached}
+        disabled={!track.cached || !canDelete}
         onClick={() => onDelete(track)}
       />
     </div>
   );
 }
 
+// Hub cache refresh while a hub speaker plays: songs get saved as they play.
+const HUB_CACHE_REFRESH_MS = 15000;
+
 function LibraryView({ onCount }) {
-  const { online, setOptimisticTrack, controls, playTrack } = useNexus();
+  const { online, setOptimisticTrack, controls, playTrack, snapshot } = useNexus();
   const toast = useToast();
   const [tracks, setTracks] = useState([]);
   const [filter, setFilter] = useState('');
@@ -317,13 +321,41 @@ function LibraryView({ onCount }) {
   const [scanning, setScanning] = useState(false);
   const [startingId, setStartingId] = useState(null);
   const [savedOnly, setSavedOnly] = useState(false);
+  const [hubCache, setHubCache] = useState(null);
+
+  // The cache shown follows the speaker the music plays on: a hub speaker
+  // (Orbit on the hub's machine) plays from the hub's cache, the board from
+  // its SD card. The hub's list is there only when the dashboard comes from
+  // the hub; else the board's is shown.
+  const hubSpeaker = snapshot.music?.output === 'satellite' && snapshot.orbit?.source === 'hub'
+    ? snapshot.orbit?.active_target || 'Hub speaker'
+    : null;
+  useEffect(() => {
+    if (!hubSpeaker) {
+      setHubCache(null);
+      return undefined;
+    }
+    let stop = false;
+    const refresh = () => getHubCache()
+      .then((c) => { if (!stop) setHubCache(c?.enabled ? c : null); })
+      .catch(() => { if (!stop) setHubCache(null); });
+    refresh();
+    const t = setInterval(refresh, HUB_CACHE_REFRESH_MS);
+    return () => { stop = true; clearInterval(t); };
+  }, [hubSpeaker]);
+  const onHub = !!(hubSpeaker && hubCache);
+  const where = onHub ? 'Pi hub' : 'SD card';
+  // Each song as the speaker playing sees it; onSD keeps the board's view
+  // for the SD card's own controls.
+  const view = (t) => (onHub
+    ? { ...t, onSD: t.cached, cached: !!hubCache.songs?.[t.id], size: hubCache.songs?.[t.id] || 0 }
+    : { ...t, onSD: t.cached });
 
   const load = async (f = filter) => {
     try {
       const data = await getLibrary(f);
       const list = Array.isArray(data) ? data : data?.tracks || [];
       setTracks(list);
-      if (!f) onCount(list.filter((t) => t.cached).length);
       list.filter(needsResolution).forEach(async (t) => {
         const meta = await resolveTrackInfo(t.id);
         if (meta) setTracks((prev) => prev.map((x) => (x.id === t.id ? { ...x, ...meta } : x)));
@@ -350,7 +382,10 @@ function LibraryView({ onCount }) {
     }
   };
 
-  const unsavedCount = tracks.filter((t) => !t.cached).length;
+  const unsavedCount = tracks.filter((t) => !t.cached).length; // on the SD card
+  const viewed = tracks.map(view);
+  const savedCount = viewed.filter((t) => t.cached).length;
+  useEffect(() => { if (!filter) onCount(savedCount); }, [savedCount, filter]); // eslint-disable-line react-hooks/exhaustive-deps
   const clearUnsaved = async () => {
     if (!window.confirm(`Remove ${unsavedCount} songs that aren't saved on the SD card from the library? Their play history goes too.`)) return;
     try {
@@ -364,7 +399,8 @@ function LibraryView({ onCount }) {
 
   const play = async (t) => {
     const track = { id: t.id, title: t.title, artist: t.artist, duration: t.duration };
-    if (!t.cached) {
+    // Through the hub (it plays its saved copy itself), or streamed.
+    if (onHub || !t.cached) {
       setStartingId(t.id);
       try {
         await playTrack(track);
@@ -392,7 +428,7 @@ function LibraryView({ onCount }) {
     }
   };
 
-  const shown = savedOnly ? tracks.filter((t) => t.cached) : tracks;
+  const shown = savedOnly ? viewed.filter((t) => t.cached) : viewed;
 
   return (
     <Card padded={false}>
@@ -406,11 +442,16 @@ function LibraryView({ onCount }) {
         <Button icon={Trash2} disabled={!online || unsavedCount === 0} onClick={clearUnsaved}>Clear unsaved ({unsavedCount})</Button>
         <Button icon={RefreshCw} busy={scanning} onClick={scan}>Rescan</Button>
       </div>
+      <div className="toolbar toolbar-note muted small">
+        {onHub
+          ? `Saved: on the Pi hub, for ${hubSpeaker} (${formatBytes(hubCache.used_bytes)} of ${formatBytes(hubCache.max_bytes)}; songs over ${Math.round(hubCache.max_duration_s / 60)} min aren't kept)`
+          : 'Saved: on the board\'s SD card'}
+      </div>
       {loading ? (
         <div className="loading"><Loader2 className="spin" /></div>
       ) : shown.length === 0 ? (
         <Empty icon={HardDriveDownload} title={filter ? 'No matches' : savedOnly ? 'No songs saved yet' : 'No songs yet'}>
-          {filter ? 'Try another filter.' : 'Turn on "Save streams to SD" and songs you play are kept for offline playback.'}
+          {filter ? 'Try another filter.' : onHub ? 'Songs played on the hub speaker are kept on the Pi hub.' : 'Turn on "Save streams to SD" and songs you play are kept for offline playback.'}
         </Empty>
       ) : (
         <div className="rows">
@@ -418,6 +459,8 @@ function LibraryView({ onCount }) {
             <LibraryRow
               key={t.id}
               track={t}
+              where={where}
+              canDelete={!onHub}
               disabled={!online}
               starting={startingId === t.id}
               onPlay={play}

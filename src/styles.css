@@ -439,6 +439,7 @@ textarea { resize: vertical; line-height: 1.5; }
 
 .toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 14px; flex-wrap: wrap; }
 .toolbar-grow { flex: 1; }
+.toolbar-note { padding-top: 0; }
 
 .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
 .eq i { width: 3px; background: var(--accent); border-radius: 2px; animation: eq 0.9s ease-in-out infinite; }
