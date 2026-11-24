@@ -129,7 +129,7 @@ export default function Device() {
             value={Number(micGain.value.toFixed(1))}
             unit=" dB"
             min={0}
-            max={60}
+            max={100}
             step={0.5}
             disabled={disabled}
             onCommit={micGain.commit}
